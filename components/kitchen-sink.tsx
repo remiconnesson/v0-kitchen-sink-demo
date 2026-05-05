@@ -17,6 +17,7 @@ import security from "comark/plugins/security"
 import mermaid from "comark/plugins/mermaid"
 import githubLight from "@shikijs/themes/github-light"
 import githubDark from "@shikijs/themes/github-dark"
+import python from "shiki/dist/langs/python.mjs"
 
 /* ------------------------------------------------------------------ */
 /*  Table-of-contents nav items                                       */
@@ -381,17 +382,11 @@ const PLUGIN_JSON_RENDER = `The JSON Render plugin converts \\\`\\\`\\\`json-ren
 Single-element shorthand also works (YAML variant):
 
 \`\`\`yaml-render
-type: alert
+type: callout
 props:
-  type: info
+  emoji: "\u{1F4CB}"
 children:
-  - text-1
-\`\`\`
-
-\`\`\`yaml-render
-type: Text
-props:
-  content: This alert was generated from a YAML spec!
+  - This callout was generated entirely from a YAML spec!
 \`\`\`
 `
 
@@ -594,7 +589,7 @@ import security   from "comark/plugins/security"
               title="Syntax Highlighting (Shiki)"
               description="Shiki-powered syntax highlighting with dual-theme support. Languages are loaded on demand. Requires shiki peer dep. Import from comark/plugins/highlight."
               source={PLUGIN_HIGHLIGHT}
-              plugins={[highlight({ themes: { light: githubLight, dark: githubDark } })]}
+              plugins={[highlight({ themes: { light: githubLight, dark: githubDark }, languages: [python] })]}
             />
 
             <DemoSection

@@ -115,7 +115,7 @@ export default function StreamingDemo() {
         </button>
       </div>
 
-      <div className="rounded-xl border-2 border-border bg-card p-5 min-h-[200px]">
+      <div className="rounded-xl border-2 border-border bg-card p-5 min-h-[200px] comark-output">
         {content ? (
           <ComarkClient streaming={isStreaming} caret components={components}>
             {content}
