@@ -4,7 +4,7 @@ import DemoSection from "@/components/demo-section"
 import StreamingDemo from "@/components/streaming-demo"
 import Playground from "@/components/playground"
 import LLMPromptBlock from "@/components/llm-prompt-block"
-import { BookOpen, Layers, Zap, Code2, Hash, Type, Box, ArrowRight, Puzzle, Smile, ListChecks, Heading, ShieldCheck, Scissors, Sigma, Footprints, Palette, Lock, GitBranch, Braces } from "lucide-react"
+import { BookOpen, Layers, Zap, Code2, Hash, Type, Box, ArrowRight, Puzzle, Smile, ListChecks, Heading, ShieldCheck, Scissors, Sigma, Footprints, Palette, Lock, GitBranch, Braces, ChevronsUpDown } from "lucide-react"
 import ThemeToggle from "@/components/theme-toggle"
 import { cn } from "@/lib/utils"
 import emoji from "comark/plugins/emoji"
@@ -432,6 +432,36 @@ export default function KitchenSink() {
           </div>
         </div>
       </header>
+
+      {/* Mobile jump-to nav -- visible below lg breakpoint */}
+      <div className="sticky top-0 z-30 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 lg:hidden">
+        <div className="mx-auto max-w-6xl px-6 py-3">
+          <div className="relative">
+            <select
+              aria-label="Jump to section"
+              className="w-full appearance-none rounded-lg border-2 border-border bg-background px-4 py-2.5 pr-10 text-sm font-medium text-foreground focus:border-primary focus:outline-none"
+              defaultValue=""
+              onChange={(e) => {
+                const el = document.getElementById(e.target.value)
+                if (el) {
+                  el.scrollIntoView({ behavior: "smooth" })
+                  e.target.value = ""
+                }
+              }}
+            >
+              <option value="" disabled>
+                Jump to section...
+              </option>
+              {TOC.map(({ id, label }) => (
+                <option key={id} value={id}>
+                  {label}
+                </option>
+              ))}
+            </select>
+            <ChevronsUpDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          </div>
+        </div>
+      </div>
 
       <div className="mx-auto max-w-6xl px-6 py-8">
         <div className="flex flex-col gap-8 lg:flex-row">
