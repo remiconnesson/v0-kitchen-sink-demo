@@ -238,6 +238,16 @@
   @apply mr-2;
 }
 
+/* Shiki dual-theme: swap light→dark inline styles */
+.dark .shiki,
+.dark .shiki span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+  font-weight: var(--shiki-dark-font-weight) !important;
+  text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+
 /* Comark caret animation */
 .comark-caret {
   display: inline-block;

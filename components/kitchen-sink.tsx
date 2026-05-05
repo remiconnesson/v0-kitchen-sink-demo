@@ -4,6 +4,7 @@ import DemoSection from "@/components/demo-section"
 import StreamingDemo from "@/components/streaming-demo"
 import Playground from "@/components/playground"
 import { BookOpen, Layers, Zap, Code2, Hash, Type, Box, ArrowRight, Puzzle, Smile, ListChecks, Heading, ShieldCheck, Scissors, Sigma, Footprints, Palette, Lock, GitBranch, Braces } from "lucide-react"
+import ThemeToggle from "@/components/theme-toggle"
 import { cn } from "@/lib/utils"
 import emoji from "comark/plugins/emoji"
 import jsonRender from "comark/plugins/json-render"
@@ -409,20 +410,23 @@ export default function KitchenSink() {
       {/* Header */}
       <header className="border-b-2 border-border bg-card">
         <div className="mx-auto max-w-6xl px-6 py-10">
-          <div className="flex items-start gap-4">
-            <div className="flex size-12 items-center justify-center rounded-xl border-2 border-primary bg-primary/10">
-              <BookOpen className="size-6 text-primary" />
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <div className="flex size-12 items-center justify-center rounded-xl border-2 border-primary bg-primary/10">
+                <BookOpen className="size-6 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl text-balance">
+                  Comark Kitchen Sink
+                </h1>
+                <p className="mt-2 max-w-2xl text-lg text-muted-foreground text-pretty">
+                  A comprehensive demo of every Comark feature: components in
+                  Markdown for React. Each section shows the MDC source alongside
+                  its rendered output.
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl text-balance">
-                Comark Kitchen Sink
-              </h1>
-              <p className="mt-2 max-w-2xl text-lg text-muted-foreground text-pretty">
-                A comprehensive demo of every Comark feature: components in
-                Markdown for React. Each section shows the MDC source alongside
-                its rendered output.
-              </p>
-            </div>
+            <ThemeToggle />
           </div>
         </div>
       </header>
