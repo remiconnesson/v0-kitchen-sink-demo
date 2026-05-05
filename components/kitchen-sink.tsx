@@ -3,8 +3,14 @@
 import DemoSection from "@/components/demo-section"
 import StreamingDemo from "@/components/streaming-demo"
 import Playground from "@/components/playground"
-import { BookOpen, Layers, Zap, Code2, Hash, Type, Box, ArrowRight } from "lucide-react"
+import { BookOpen, Layers, Zap, Code2, Hash, Type, Box, ArrowRight, Puzzle, Smile, ListChecks, Heading, ShieldCheck, Scissors, Sigma } from "lucide-react"
 import { cn } from "@/lib/utils"
+import emoji from "comark/plugins/emoji"
+import alert from "comark/plugins/alert"
+import taskList from "comark/plugins/task-list"
+import toc from "comark/plugins/toc"
+import summary from "comark/plugins/summary"
+import math from "comark/plugins/math"
 
 /* ------------------------------------------------------------------ */
 /*  Table-of-contents nav items                                       */
@@ -18,6 +24,13 @@ const TOC = [
   { id: "named-slots", label: "Named Slots", icon: Layers },
   { id: "nested-components", label: "Nested Components", icon: Layers },
   { id: "attributes", label: "Element Attributes", icon: Hash },
+  { id: "plugins-intro", label: "Plugins", icon: Puzzle },
+  { id: "plugin-emoji", label: "Emoji Plugin", icon: Smile },
+  { id: "plugin-alert", label: "Alert Plugin", icon: ShieldCheck },
+  { id: "plugin-task-list", label: "Task List Plugin", icon: ListChecks },
+  { id: "plugin-toc", label: "TOC Plugin", icon: Heading },
+  { id: "plugin-math", label: "Math Plugin", icon: Sigma },
+  { id: "plugin-excerpt", label: "Excerpt Plugin", icon: Scissors },
   { id: "streaming", label: "Streaming", icon: Zap },
   { id: "playground", label: "Playground", icon: BookOpen },
 ]
@@ -146,6 +159,109 @@ Span syntax wraps inline text: [highlighted text]{.bg-accent/20 .px-1 .rounded} 
 `
 
 /* ------------------------------------------------------------------ */
+/*  Plugin demo source strings                                        */
+/* ------------------------------------------------------------------ */
+
+const PLUGIN_EMOJI = `Emoji shortcodes are converted to real emoji characters:
+
+I :heart: Comark! It's :rocket: fast and :sparkles: beautiful.
+
+:wave: Hello! How are you :smile: today?
+
+Combine with markdown: **:fire: Hot take** — Comark is _:100: percent_ awesome :tada:
+
+Some more: :thumbsup: :thumbsdown: :eyes: :warning: :bulb: :memo:
+`
+
+const PLUGIN_ALERT = `GitHub-style alert blockquotes render with icons and colors:
+
+> [!NOTE]
+> Useful information that users should know, even when skimming content.
+
+> [!TIP]
+> Helpful advice for doing things better or more easily.
+
+> [!IMPORTANT]
+> Key information users need to know to achieve their goal.
+
+> [!WARNING]
+> Urgent info that needs immediate user attention to avoid problems.
+
+> [!CAUTION]
+> Advises about risks or negative outcomes of certain actions.
+`
+
+const PLUGIN_TASK_LIST = `Interactive task lists from standard markdown syntax:
+
+- [x] Install Comark
+- [x] Add the task-list plugin
+- [ ] Build something awesome
+- [ ] Ship to production
+
+Nested task lists also work:
+
+- [x] Phase 1
+  - [x] Research
+  - [x] Prototype
+- [ ] Phase 2
+  - [ ] Implementation
+  - [ ] Testing
+`
+
+const PLUGIN_TOC = `The TOC plugin extracts a table of contents from headings:
+
+# Introduction
+
+Welcome to the docs.
+
+## Getting Started
+
+Install the package.
+
+### Prerequisites
+
+Make sure you have Node.js installed.
+
+## API Reference
+
+Full API documentation.
+
+### Core Functions
+
+The main parsing functions.
+
+### Plugins
+
+Extend with plugins.
+`
+
+const PLUGIN_MATH = `Inline math uses single dollar signs: $E = mc^2$ is Einstein's famous equation.
+
+The quadratic formula is $x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$.
+
+Display math uses double dollar signs for block equations:
+
+$$
+\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}
+$$
+
+$$
+\\sum_{n=1}^{\\infty} \\frac{1}{n^2} = \\frac{\\pi^2}{6}
+$$
+
+Mix with markdown: the **Pythagorean theorem** states that $a^2 + b^2 = c^2$.
+`
+
+const PLUGIN_EXCERPT = `This is the excerpt content that appears before the delimiter. It's typically used for blog post previews, summaries, or meta descriptions.
+
+<!--more-->
+
+This is the rest of the content that comes after the excerpt delimiter. In a blog, this would only be visible on the full post page, not in the listing.
+
+The \`summary\` plugin splits content at the \`<!--more-->\` delimiter and exposes the excerpt via the parsed tree's data.
+`
+
+/* ------------------------------------------------------------------ */
 /*  Main component                                                    */
 /* ------------------------------------------------------------------ */
 
@@ -255,6 +371,82 @@ export default function KitchenSink() {
               title="Element Attributes"
               description="Add custom classes, IDs, styles, and data attributes to native Markdown elements like bold, italic, links, and images using {.class #id key=&quot;value&quot;} after the element."
               source={ATTRIBUTES}
+            />
+
+            {/* ---- Plugins section divider ---- */}
+            <section id="plugins-intro" className="scroll-mt-24">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="flex size-10 items-center justify-center rounded-lg border-2 border-primary bg-primary/10">
+                  <Puzzle className="size-5 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-foreground text-balance">
+                    Plugins
+                  </h2>
+                  <p className="text-muted-foreground text-pretty">
+                    Comark ships with built-in plugins that extend markdown with
+                    emoji, syntax highlighting, math, alerts, task lists, and
+                    more. Pass them via the <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm">plugins</code> prop.
+                  </p>
+                </div>
+              </div>
+              <pre className="overflow-x-auto rounded-xl border-2 border-border bg-muted/20 p-5 font-mono text-sm leading-relaxed text-foreground">
+{`import emoji from "comark/plugins/emoji"
+import alert from "comark/plugins/alert"
+import math  from "comark/plugins/math"
+
+<Comark plugins={[emoji(), alert(), math()]}>
+  {content}
+</Comark>`}
+              </pre>
+            </section>
+
+            <DemoSection
+              id="plugin-emoji"
+              title="Emoji Plugin"
+              description="Converts emoji shortcodes like :smile: and :rocket: into real Unicode emoji characters. No configuration needed."
+              source={PLUGIN_EMOJI}
+              plugins={[emoji()]}
+            />
+
+            <DemoSection
+              id="plugin-alert"
+              title="Alert Plugin (GitHub-style)"
+              description="Renders GitHub-style alert blockquotes with distinctive icons and colors. Uses the > [!TYPE] syntax for NOTE, TIP, IMPORTANT, WARNING, and CAUTION."
+              source={PLUGIN_ALERT}
+              plugins={[alert()]}
+            />
+
+            <DemoSection
+              id="plugin-task-list"
+              title="Task List Plugin"
+              description="Renders interactive checkboxes from standard [ ] and [x] list syntax. Supports nesting."
+              source={PLUGIN_TASK_LIST}
+              plugins={[taskList()]}
+            />
+
+            <DemoSection
+              id="plugin-toc"
+              title="TOC Plugin"
+              description="Generates a hierarchical table of contents from headings. The extracted TOC data is available on the parsed tree for building navigation. Here we demo the heading ID generation."
+              source={PLUGIN_TOC}
+              plugins={[toc({ depth: 3 })]}
+            />
+
+            <DemoSection
+              id="plugin-math"
+              title="Math Plugin (KaTeX)"
+              description="Renders LaTeX math formulas using KaTeX. Inline math uses $...$ and display math uses $$...$$. Requires the katex peer dependency."
+              source={PLUGIN_MATH}
+              plugins={[math()]}
+            />
+
+            <DemoSection
+              id="plugin-excerpt"
+              title="Excerpt / Summary Plugin"
+              description="Splits content at the <!--more--> delimiter to extract excerpts for blog post previews or meta descriptions. The excerpt is exposed via parsed tree data."
+              source={PLUGIN_EXCERPT}
+              plugins={[summary()]}
             />
 
             <StreamingDemo />
