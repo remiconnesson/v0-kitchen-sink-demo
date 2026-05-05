@@ -45,6 +45,7 @@ const TOC = [
   { id: "plugin-security", label: "Security Plugin", icon: Lock },
   { id: "plugin-toc", label: "TOC Plugin", icon: Heading },
   { id: "plugin-excerpt", label: "Excerpt Plugin", icon: Scissors },
+  { id: "styling-guide", label: "Styling Guide", icon: Palette },
   { id: "streaming", label: "Streaming", icon: Zap },
   { id: "playground", label: "Playground", icon: BookOpen },
   { id: "llm-prompt", label: "LLM Prompt", icon: Code2 },
@@ -402,6 +403,61 @@ This is the rest of the content that comes after the excerpt delimiter. In a blo
 The \`summary\` plugin splits content at the \`<!--more-->\` delimiter and exposes the excerpt via the parsed tree's data.
 `
 
+const STYLING_INLINE = `Comark lets you apply **Tailwind classes directly** in Markdown using attribute syntax.
+
+### Colored Text
+
+[This text is teal]{.text-secondary .font-semibold} and [this is the primary color]{.text-primary}.
+
+### Background Highlights
+
+Here is [an inline highlight]{.bg-accent/20 .px-1.5 .py-0.5 .rounded} within a sentence.
+
+### Combined Styles
+
+[Styled span]{.bg-primary/10 .text-primary .font-bold .px-2 .py-1 .rounded-md .text-sm} with multiple classes.
+
+### On Native Elements
+
+**Bold with color**{.text-destructive}
+
+*Italic with a class*{.text-secondary}
+
+[External link]{.text-accent .no-underline .font-bold}(https://comark.dev)
+`
+
+const STYLING_COMPONENTS = `Custom React components are styled with regular **Tailwind CSS** inside the component file. Props from MDC become React props:
+
+::alert{type="info"}
+This alert\\'s look comes from the React component, not from MDC attributes. The \`type\` prop maps to a style variant.
+::
+
+::card{title="Component Styling"}
+#header
+*Styled by the Card component*
+
+Components own their own styles. MDC just passes **data** (props, children, slots). The React component decides how to render.
+::
+`
+
+const STYLING_CSS = `The \`.comark-output\` CSS class controls how **native markdown elements** look (headings, paragraphs, lists, tables, code, etc.).
+
+# This heading is styled by CSS
+
+Paragraphs, **bold**, *italic*, and \`inline code\` all inherit their styles from the \`.comark-output\` ruleset in \`globals.css\`.
+
+- List items get bullets and spacing
+- From the same CSS layer
+
+| Element | Styled By          |
+|---------|-------------------|
+| Heading | \`.comark-output h1\` |
+| Code    | \`.comark-output code\` |
+| Table   | \`.comark-output table\` |
+
+> Blockquotes get a left border and italic styling from CSS.
+`
+
 /* ------------------------------------------------------------------ */
 /*  Main component                                                    */
 /* ------------------------------------------------------------------ */
@@ -666,6 +722,75 @@ import security   from "comark/plugins/security"
               description="Splits content at the <!--more--> delimiter to extract excerpts for blog post previews or meta descriptions. The excerpt is exposed via tree.meta.summary. Import from comark/plugins/summary."
               source={PLUGIN_EXCERPT}
               plugins={[summary()]}
+            />
+
+            {/* ---- Styling Guide section divider ---- */}
+            <section id="styling-guide" className="scroll-mt-24">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="flex size-10 items-center justify-center rounded-lg border-2 border-primary bg-primary/10">
+                  <Palette className="size-5 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-foreground text-balance">
+                    Styling Guide
+                  </h2>
+                  <p className="text-muted-foreground text-pretty">
+                    Three layers control how Comark output looks: global CSS rules, inline
+                    element attributes, and custom component styling.
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-xl border-2 border-border bg-muted/20 p-5 mb-6">
+                <h3 className="text-sm font-bold text-foreground mb-3">How the 3 layers work together</h3>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-lg border border-border bg-card p-4">
+                    <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">Layer 1</div>
+                    <div className="font-semibold text-foreground mb-1">.comark-output CSS</div>
+                    <p className="text-sm text-muted-foreground">
+                      Global rules in <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">globals.css</code> style native
+                      markdown elements: headings, lists, tables, code, blockquotes.
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-border bg-card p-4">
+                    <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">Layer 2</div>
+                    <div className="font-semibold text-foreground mb-1">{"Element Attributes {.class}"}</div>
+                    <p className="text-sm text-muted-foreground">
+                      Inline <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">{"{.class #id}"}</code> syntax adds Tailwind
+                      classes directly to markdown elements in your MDC content.
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-border bg-card p-4">
+                    <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">Layer 3</div>
+                    <div className="font-semibold text-foreground mb-1">Component Styling</div>
+                    <p className="text-sm text-muted-foreground">
+                      Custom React components own their visual design. MDC passes data via props;
+                      the component renders with Tailwind, CSS modules, or any approach.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <DemoSection
+              id="styling-guide-css"
+              title="Layer 1: Global CSS Rules"
+              description="The .comark-output class in globals.css provides base styles for all native markdown elements. These rules use Tailwind's @apply for consistent theming. Override or extend them to change the look of all rendered markdown."
+              source={STYLING_CSS}
+            />
+
+            <DemoSection
+              id="styling-guide-inline"
+              title="Layer 2: Inline Element Attributes"
+              description="Use {.tailwind-class} after any markdown element to add Tailwind classes inline. This is Comark's attribute syntax -- it works on bold, italic, links, spans, and more. Multiple classes are space-separated."
+              source={STYLING_INLINE}
+            />
+
+            <DemoSection
+              id="styling-guide-components"
+              title="Layer 3: Component Styling"
+              description="Custom MDC components are regular React components styled however you like. Props from MDC (type, title, etc.) drive variant logic inside the component. The MDC author writes semantic markup; the component author controls the visual output."
+              source={STYLING_COMPONENTS}
             />
 
             <StreamingDemo />
