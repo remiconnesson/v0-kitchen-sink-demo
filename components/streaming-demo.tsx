@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useCallback } from "react"
-import { Comark } from "@comark/react"
+import { ComarkClient } from "@comark/react"
 import ComarkAlert from "@/components/comark/alert"
 import ComarkCard from "@/components/comark/comark-card"
 import ComarkBadge from "@/components/comark/comark-badge"
@@ -117,9 +117,9 @@ export default function StreamingDemo() {
 
       <div className="rounded-xl border-2 border-border bg-card p-5 min-h-[200px]">
         {content ? (
-          <Comark streaming={isStreaming} caret components={components}>
+          <ComarkClient streaming={isStreaming} caret components={components}>
             {content}
-          </Comark>
+          </ComarkClient>
         ) : (
           <p className="text-muted-foreground italic">
             Press &quot;Start Stream&quot; to simulate an LLM streaming response...

@@ -43,7 +43,9 @@ app/
 
 components/
   comark/
-    index.tsx         # AppComark — pre-configured defineComarkComponent
+    components-map.ts # Shared component registry (no @comark/react import — safe for client)
+    index.tsx         # AppComark — async Server Component wrapper via defineComarkComponent
+    client.tsx        # AppComarkClient — "use client" wrapper via ComarkClient
     alert.tsx         # ::alert{type="info|warning|error|success"}
     comark-card.tsx   # ::card{title="..."} with #header, #footer slots
     comark-badge.tsx  # :badge[text]{color="blue|green|red|yellow"}
@@ -137,6 +139,31 @@ The parser's `autoClose` (on by default) handles incomplete syntax mid-stream.
 
 ---
 
+## Critical Architecture: Server vs Client Rendering
+
+Comark provides **three rendering components** from `@comark/react`:
+
+| Component         | Type                 | Use In                                                    |
+| ----------------- | -------------------- | --------------------------------------------------------- |
+| `Comark`          | Async Server Component | Server Components only (parses + renders on server)       |
+| `ComarkClient`    | Client Component       | `"use client"` files (parses on client via `useMemo`)     |
+| `ComarkRenderer`  | Sync Component         | Anywhere (takes a pre-parsed `tree`, no parsing)          |
+
+**This project wraps them as:**
+
+- `AppComark` (in `comark/index.tsx`) — uses `defineComarkComponent`, which wraps the async `Comark`. **Server Components only.**
+- `AppComarkClient` (in `comark/client.tsx`) — wraps `ComarkClient` with the same component map. **Use inside `"use client"` trees.**
+
+**The `components-map.ts` file** holds the shared component registry. It does **not** import
+from `@comark/react`, so client components can safely import it without pulling the async
+`Comark` into the client bundle.
+
+**Rule:** Never import from `comark/index.tsx` in a client component. Always import
+`AppComarkClient` from `comark/client.tsx` or import individual components from
+`comark/components-map.ts`.
+
+---
+
 ## Playbooks
 
 ### Playbook 1: Add a New Custom Component
@@ -162,19 +189,19 @@ export default function MyComponent({ variant = "default", children, slotFooter 
 }
 ```
 
-2. Register it in `components/comark/index.tsx`:
+2. Register it in `components/comark/components-map.ts`:
 
 ```tsx
 import MyComponent from "./my-component"
 
-export const AppComark = defineComarkComponent({
-  // ... existing components
-  components: {
-    ...existingComponents,
-    "my-component": MyComponent,
-  },
-})
+export const comarkComponents: Record<string, ComponentType<any>> = {
+  // ... existing entries
+  "my-component": MyComponent,
+}
 ```
+
+Both `AppComark` (server) and `AppComarkClient` (client) read from this
+shared map, so the component is available everywhere automatically.
 
 3. Use it in MDC:
 
@@ -221,29 +248,40 @@ const TOC = [
 
 1. Install (if not already): `pnpm add @comark/react comark`
 
-2. Import the pre-configured component:
+2a. **Server Component** (recommended — zero client JS):
 
 ```tsx
-"use client"
+// app/docs/page.tsx (no "use client" directive)
 import { AppComark } from "@/components/comark"
 
-export default function MyPage() {
+export default function DocsPage() {
   const content = `# Hello\n\n::alert{type="info"}\nIt works!\n::`
   return <AppComark>{content}</AppComark>
 }
 ```
 
-All registered components (alert, card, badge, callout, etc.) are available automatically.
+2b. **Client Component** (for interactive use — playground, streaming, etc.):
+
+```tsx
+"use client"
+import AppComarkClient from "@/components/comark/client"
+
+export default function MyPage() {
+  const content = `# Hello\n\n::alert{type="info"}\nIt works!\n::`
+  return <AppComarkClient>{content}</AppComarkClient>
+}
+```
+
+All registered components (alert, card, badge, callout, etc.) are available
+in both wrappers automatically.
 
 ### Playbook 4: Use Comark with Streaming (AI Chat)
 
 ```tsx
 "use client"
 import { useState } from "react"
-import { Comark } from "@comark/react"
-import ComarkAlert from "@/components/comark/alert"
-
-const components = { alert: ComarkAlert }
+import { ComarkClient } from "@comark/react"
+import { comarkComponents } from "@/components/comark/components-map"
 
 export default function Chat() {
   const [content, setContent] = useState("")
@@ -269,17 +307,19 @@ export default function Chat() {
   }
 
   return (
-    <Comark streaming={isStreaming} caret components={components}>
+    <ComarkClient streaming={isStreaming} caret components={comarkComponents}>
       {content}
-    </Comark>
+    </ComarkClient>
   )
 }
 ```
 
 Key points:
+- Use `ComarkClient` (not `Comark`) inside `"use client"` components
 - `streaming={true}` tells the renderer content is still arriving
 - `caret` shows a blinking cursor at the insertion point
 - `autoClose` is on by default — partial `**bold` renders correctly mid-stream
+- Import components from `components-map.ts` (not `index.tsx`) to avoid bundling the async server component
 
 ### Playbook 5: Server-Side Parsing with ComarkRenderer
 

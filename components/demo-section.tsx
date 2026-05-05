@@ -3,7 +3,7 @@
 import type { ReactNode } from "react"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
-import { AppComark } from "@/components/comark"
+import AppComarkClient from "@/components/comark/client"
 import { Code, Eye } from "lucide-react"
 
 interface DemoSectionProps {
@@ -79,7 +79,7 @@ export default function DemoSection({
             Rendered Output
           </div>
           <div className="comark-output">
-            <AppComark>{source}</AppComark>
+            <AppComarkClient>{source}</AppComarkClient>
           </div>
         </div>
 

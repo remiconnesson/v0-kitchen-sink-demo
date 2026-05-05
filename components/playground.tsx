@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { AppComark } from "@/components/comark"
+import AppComarkClient from "@/components/comark/client"
 import { Pencil, Eye } from "lucide-react"
 
 const INITIAL = `# Try it yourself!
@@ -59,7 +59,7 @@ export default function Playground() {
             Preview
           </div>
           <div className="h-80 overflow-y-auto rounded-lg p-4">
-            <AppComark>{value}</AppComark>
+            <AppComarkClient>{value}</AppComarkClient>
           </div>
         </div>
       </div>
