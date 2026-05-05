@@ -9,6 +9,7 @@ import Step from "./step"
 import ComarkTabs from "./comark-tabs"
 import Divider from "./divider"
 import GitHubAlertBlockquote from "./github-alert-blockquote"
+import { Mermaid } from "@comark/react/plugins/mermaid"
 
 /**
  * Shared component map — used by both the server-side AppComark
@@ -31,6 +32,7 @@ export const comarkComponents: Record<string, ComponentType<any>> = {
   // Element overrides for built-in plugins
   math: MathRenderer,
   blockquote: GitHubAlertBlockquote,
+  mermaid: Mermaid,
 }
 
 export {
@@ -44,4 +46,5 @@ export {
   Divider,
   MathRenderer,
   GitHubAlertBlockquote,
+  Mermaid,
 }

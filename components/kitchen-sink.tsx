@@ -3,14 +3,19 @@
 import DemoSection from "@/components/demo-section"
 import StreamingDemo from "@/components/streaming-demo"
 import Playground from "@/components/playground"
-import { BookOpen, Layers, Zap, Code2, Hash, Type, Box, ArrowRight, Puzzle, Smile, ListChecks, Heading, ShieldCheck, Scissors, Sigma } from "lucide-react"
+import { BookOpen, Layers, Zap, Code2, Hash, Type, Box, ArrowRight, Puzzle, Smile, ListChecks, Heading, ShieldCheck, Scissors, Sigma, Footprints, Palette, Lock, GitBranch } from "lucide-react"
 import { cn } from "@/lib/utils"
 import emoji from "comark/plugins/emoji"
-import alert from "comark/plugins/alert"
 import taskList from "comark/plugins/task-list"
 import toc from "comark/plugins/toc"
 import summary from "comark/plugins/summary"
 import math from "comark/plugins/math"
+import footnotes from "comark/plugins/footnotes"
+import highlight from "comark/plugins/highlight"
+import security from "comark/plugins/security"
+import mermaid from "comark/plugins/mermaid"
+import githubLight from "@shikijs/themes/github-light"
+import githubDark from "@shikijs/themes/github-dark"
 
 /* ------------------------------------------------------------------ */
 /*  Table-of-contents nav items                                       */
@@ -25,11 +30,15 @@ const TOC = [
   { id: "nested-components", label: "Nested Components", icon: Layers },
   { id: "attributes", label: "Element Attributes", icon: Hash },
   { id: "plugins-intro", label: "Plugins", icon: Puzzle },
+  { id: "plugin-alert", label: "Alerts (built-in)", icon: ShieldCheck },
   { id: "plugin-emoji", label: "Emoji Plugin", icon: Smile },
-  { id: "plugin-alert", label: "Alert Plugin", icon: ShieldCheck },
   { id: "plugin-task-list", label: "Task List Plugin", icon: ListChecks },
-  { id: "plugin-toc", label: "TOC Plugin", icon: Heading },
+  { id: "plugin-footnotes", label: "Footnotes Plugin", icon: Footprints },
   { id: "plugin-math", label: "Math Plugin", icon: Sigma },
+  { id: "plugin-highlight", label: "Highlight Plugin", icon: Palette },
+  { id: "plugin-mermaid", label: "Mermaid Plugin", icon: GitBranch },
+  { id: "plugin-security", label: "Security Plugin", icon: Lock },
+  { id: "plugin-toc", label: "TOC Plugin", icon: Heading },
   { id: "plugin-excerpt", label: "Excerpt Plugin", icon: Scissors },
   { id: "streaming", label: "Streaming", icon: Zap },
   { id: "playground", label: "Playground", icon: BookOpen },
@@ -173,7 +182,7 @@ Combine with markdown: **:fire: Hot take** — Comark is _:100: percent_ awesome
 Some more: :thumbsup: :thumbsdown: :eyes: :warning: :bulb: :memo:
 `
 
-const PLUGIN_ALERT = `GitHub-style alert blockquotes render with icons and colors:
+const PLUGIN_ALERT = `GitHub-style alerts are **built-in** — no plugin import needed:
 
 > [!NOTE]
 > Useful information that users should know, even when skimming content.
@@ -250,6 +259,80 @@ $$
 $$
 
 Mix with markdown: the **Pythagorean theorem** states that $a^2 + b^2 = c^2$.
+`
+
+const PLUGIN_FOOTNOTES = `Comark supports footnotes[^1] with automatic back-references[^2].
+
+References are rendered as superscript links, and definitions are collected
+into a numbered list at the end of the output.
+
+The standard model[^sm] describes three of the four fundamental forces.
+Gravity is described by general relativity[^gr].
+
+[^1]: Footnotes are rendered as a list at the end of the document.
+[^2]: Each footnote includes a back-reference link to return to the text.
+[^sm]: The Standard Model of particle physics classifies all known elementary particles.
+[^gr]: Einstein's general theory of relativity, published in 1915.
+`
+
+const PLUGIN_HIGHLIGHT = `Syntax highlighting uses Shiki under the hood:
+
+\`\`\`typescript
+interface User {
+  id: string
+  name: string
+  email: string
+}
+
+function greet(user: User): string {
+  return \\\`Hello, \\\${user.name}!\\\`
+}
+\`\`\`
+
+\`\`\`python
+def fibonacci(n: int) -> list[int]:
+    """Generate a Fibonacci sequence."""
+    a, b = 0, 1
+    result = []
+    for _ in range(n):
+        result.append(a)
+        a, b = b, a + b
+    return result
+\`\`\`
+`
+
+const PLUGIN_MERMAID = `Mermaid diagrams render from \\\`\\\`\\\`mermaid code blocks:
+
+\`\`\`mermaid
+graph TD
+    A[Parse MDC] --> B{Has components?}
+    B -->|Yes| C[Resolve components]
+    B -->|No| D[Render markdown]
+    C --> D
+    D --> E[React output]
+\`\`\`
+`
+
+const PLUGIN_SECURITY = `The security plugin sanitizes the AST to prevent XSS:
+
+**Before** (dangerous input):
+- \`<script>alert('XSS')</script>\` is stripped
+- \`<a href="javascript:alert('XSS')">Click</a>\` has href removed
+- \`<img onerror="alert('XSS')" src="x">\` has event handler stripped
+- \`<iframe src="evil.com"></iframe>\` is removed (with blockedTags)
+
+**After** (safe output):
+The text remains but dangerous elements are neutralized.
+
+Configure with options:
+
+\`\`\`typescript
+security({
+  blockedTags: ['script', 'iframe', 'object', 'embed'],
+  allowedProtocols: ['https', 'mailto'],
+  allowDataImages: false,
+})
+\`\`\`
 `
 
 const PLUGIN_EXCERPT = `This is the excerpt content that appears before the delimiter. It's typically used for blog post previews, summaries, or meta descriptions.
@@ -391,60 +474,96 @@ export default function KitchenSink() {
                 </div>
               </div>
               <pre className="overflow-x-auto rounded-xl border-2 border-border bg-muted/20 p-5 font-mono text-sm leading-relaxed text-foreground">
-{`import emoji from "comark/plugins/emoji"
-import alert from "comark/plugins/alert"
-import math  from "comark/plugins/math"
+{`import emoji     from "comark/plugins/emoji"
+import footnotes from "comark/plugins/footnotes"
+import math      from "comark/plugins/math"
+import highlight from "comark/plugins/highlight"
+import mermaid   from "comark/plugins/mermaid"
+import security  from "comark/plugins/security"
 
-<Comark plugins={[emoji(), alert(), math()]}>
+// Alerts (> [!NOTE]) are built-in — no import needed!
+
+<ComarkClient plugins={[emoji(), math(), footnotes(), highlight(), mermaid()]}>
   {content}
-</Comark>`}
+</ComarkClient>`}
               </pre>
             </section>
 
             <DemoSection
+              id="plugin-alert"
+              title="Alerts (built-in)"
+              description="GitHub-style alert blockquotes are built into Comark -- no plugin import needed. Uses > [!TYPE] syntax for NOTE, TIP, IMPORTANT, WARNING, and CAUTION. Register a custom blockquote component to add icons and colors."
+              source={PLUGIN_ALERT}
+            />
+
+            <DemoSection
               id="plugin-emoji"
               title="Emoji Plugin"
-              description="Converts emoji shortcodes like :smile: and :rocket: into real Unicode emoji characters. No configuration needed."
+              description="Converts emoji shortcodes like :smile: and :rocket: into real Unicode emoji characters. Import from comark/plugins/emoji. No configuration needed."
               source={PLUGIN_EMOJI}
               plugins={[emoji()]}
             />
 
             <DemoSection
-              id="plugin-alert"
-              title="Alert Plugin (GitHub-style)"
-              description="Renders GitHub-style alert blockquotes with distinctive icons and colors. Uses the > [!TYPE] syntax for NOTE, TIP, IMPORTANT, WARNING, and CAUTION."
-              source={PLUGIN_ALERT}
-              plugins={[alert()]}
-            />
-
-            <DemoSection
               id="plugin-task-list"
               title="Task List Plugin"
-              description="Renders interactive checkboxes from standard [ ] and [x] list syntax. Supports nesting."
+              description="Renders interactive checkboxes from standard [ ] and [x] list syntax. Supports nesting. Import from comark/plugins/task-list."
               source={PLUGIN_TASK_LIST}
               plugins={[taskList()]}
             />
 
             <DemoSection
-              id="plugin-toc"
-              title="TOC Plugin"
-              description="Generates a hierarchical table of contents from headings. The extracted TOC data is available on the parsed tree for building navigation. Here we demo the heading ID generation."
-              source={PLUGIN_TOC}
-              plugins={[toc({ depth: 3 })]}
+              id="plugin-footnotes"
+              title="Footnotes Plugin"
+              description="Adds footnote references [^label] and definitions [^label]: content. References become superscript links; definitions collect into a numbered list at the end. Import from comark/plugins/footnotes."
+              source={PLUGIN_FOOTNOTES}
+              plugins={[footnotes()]}
             />
 
             <DemoSection
               id="plugin-math"
               title="Math Plugin (KaTeX)"
-              description="Renders LaTeX math formulas using KaTeX. Inline math uses $...$ and display math uses $$...$$. Requires the katex peer dependency."
+              description="Renders LaTeX math with KaTeX. Inline: $E = mc^2$. Display: $$...$$. Requires katex peer dep. Register the Math component for rendering. Import from comark/plugins/math."
               source={PLUGIN_MATH}
               plugins={[math()]}
             />
 
             <DemoSection
+              id="plugin-highlight"
+              title="Syntax Highlighting (Shiki)"
+              description="Shiki-powered syntax highlighting with dual-theme support. Languages are loaded on demand. Requires shiki peer dep. Import from comark/plugins/highlight."
+              source={PLUGIN_HIGHLIGHT}
+              plugins={[highlight({ themes: { light: githubLight, dark: githubDark } })]}
+            />
+
+            <DemoSection
+              id="plugin-mermaid"
+              title="Mermaid Diagrams"
+              description="Renders Mermaid diagrams from ```mermaid code blocks. Requires beautiful-mermaid peer dep. Register the Mermaid component for rendering. Import from comark/plugins/mermaid."
+              source={PLUGIN_MERMAID}
+              plugins={[mermaid()]}
+            />
+
+            <DemoSection
+              id="plugin-security"
+              title="Security Sanitization"
+              description="Sanitizes the parsed AST by removing dangerous elements (script, iframe), blocking malicious protocols (javascript:, vbscript:), and stripping event handlers (onclick, onerror). Import from comark/plugins/security."
+              source={PLUGIN_SECURITY}
+              plugins={[security({ blockedTags: ["script", "iframe", "object", "embed"] })]}
+            />
+
+            <DemoSection
+              id="plugin-toc"
+              title="TOC Plugin"
+              description="Generates a hierarchical table of contents from headings and stores it in tree.meta.toc. Heading IDs are auto-generated for anchor linking. Import from comark/plugins/toc."
+              source={PLUGIN_TOC}
+              plugins={[toc({ depth: 3 })]}
+            />
+
+            <DemoSection
               id="plugin-excerpt"
               title="Excerpt / Summary Plugin"
-              description="Splits content at the <!--more--> delimiter to extract excerpts for blog post previews or meta descriptions. The excerpt is exposed via parsed tree data."
+              description="Splits content at the <!--more--> delimiter to extract excerpts for blog post previews or meta descriptions. The excerpt is exposed via tree.meta.summary. Import from comark/plugins/summary."
               source={PLUGIN_EXCERPT}
               plugins={[summary()]}
             />
