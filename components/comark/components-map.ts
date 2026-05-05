@@ -1,4 +1,5 @@
 import type { ComponentType } from "react"
+import MathRenderer from "./math-renderer"
 import ComarkAlert from "./alert"
 import ComarkCard from "./comark-card"
 import ComarkBadge from "./comark-badge"
@@ -7,6 +8,7 @@ import Steps from "./steps"
 import Step from "./step"
 import ComarkTabs from "./comark-tabs"
 import Divider from "./divider"
+import GitHubAlertBlockquote from "./github-alert-blockquote"
 
 /**
  * Shared component map — used by both the server-side AppComark
@@ -26,6 +28,9 @@ export const comarkComponents: Record<string, ComponentType<any>> = {
   step: Step,
   tabs: ComarkTabs,
   divider: Divider,
+  // Element overrides for built-in plugins
+  math: MathRenderer,
+  blockquote: GitHubAlertBlockquote,
 }
 
 export {
@@ -37,4 +42,6 @@ export {
   Step,
   ComarkTabs,
   Divider,
+  MathRenderer,
+  GitHubAlertBlockquote,
 }
