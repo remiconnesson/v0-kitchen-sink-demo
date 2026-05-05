@@ -211,6 +211,43 @@
   @apply text-primary underline underline-offset-4 hover:text-primary/80;
 }
 
+/* Footnotes plugin styles */
+.comark-output .footnote-ref {
+  @apply text-xs align-super leading-none;
+}
+.comark-output .footnote-ref a {
+  @apply text-primary no-underline font-semibold;
+}
+.comark-output .footnotes {
+  @apply mt-8 text-sm text-muted-foreground;
+}
+.comark-output .footnotes hr {
+  @apply border-none border-t border-border;
+}
+.comark-output .footnotes-list li {
+  @apply mb-1;
+}
+.comark-output .footnote-backref {
+  @apply text-primary no-underline ml-1;
+}
+/* Task list plugin styles */
+.comark-output .task-list-item {
+  list-style: none;
+}
+.comark-output .task-list-item-checkbox {
+  @apply mr-2;
+}
+
+/* Shiki dual-theme: swap light→dark inline styles */
+.dark .shiki,
+.dark .shiki span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+  font-weight: var(--shiki-dark-font-weight) !important;
+  text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+
 /* Comark caret animation */
 .comark-caret {
   display: inline-block;

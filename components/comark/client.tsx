@@ -1,6 +1,7 @@
 "use client"
 
 import { ComarkClient } from "@comark/react"
+import type { ParseOptions } from "comark"
 import type { ReactNode } from "react"
 import { comarkComponents } from "./components-map"
 
@@ -11,6 +12,7 @@ interface AppComarkClientProps {
   caret?: boolean
   className?: string
   components?: Record<string, React.ComponentType<unknown>>
+  plugins?: ParseOptions["plugins"]
 }
 
 /**
@@ -28,6 +30,7 @@ export default function AppComarkClient({
   caret,
   className,
   components: extraComponents,
+  plugins,
 }: AppComarkClientProps) {
   const mergedComponents = {
     ...comarkComponents,
@@ -41,6 +44,7 @@ export default function AppComarkClient({
       streaming={streaming}
       caret={caret}
       className={className}
+      plugins={plugins}
     />
   )
 }

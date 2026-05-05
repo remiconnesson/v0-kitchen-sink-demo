@@ -12,6 +12,7 @@ interface DemoSectionProps {
   description: string
   source: string
   children?: ReactNode
+  plugins?: Array<unknown>
 }
 
 /**
@@ -24,6 +25,7 @@ export default function DemoSection({
   title,
   description,
   source,
+  plugins,
 }: DemoSectionProps) {
   const [tab, setTab] = useState<"preview" | "source">("preview")
 
@@ -79,7 +81,7 @@ export default function DemoSection({
             Rendered Output
           </div>
           <div className="comark-output">
-            <AppComarkClient>{source}</AppComarkClient>
+            <AppComarkClient plugins={plugins}>{source}</AppComarkClient>
           </div>
         </div>
 

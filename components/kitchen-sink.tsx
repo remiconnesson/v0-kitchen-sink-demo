@@ -3,8 +3,23 @@
 import DemoSection from "@/components/demo-section"
 import StreamingDemo from "@/components/streaming-demo"
 import Playground from "@/components/playground"
-import { BookOpen, Layers, Zap, Code2, Hash, Type, Box, ArrowRight } from "lucide-react"
+import LLMPromptBlock from "@/components/llm-prompt-block"
+import { BookOpen, Layers, Zap, Code2, Hash, Type, Box, ArrowRight, Puzzle, Smile, ListChecks, Heading, ShieldCheck, Scissors, Sigma, Footprints, Palette, Lock, GitBranch, Braces, ChevronsUpDown } from "lucide-react"
+import ThemeToggle from "@/components/theme-toggle"
 import { cn } from "@/lib/utils"
+import emoji from "comark/plugins/emoji"
+import jsonRender from "comark/plugins/json-render"
+import taskList from "comark/plugins/task-list"
+import toc from "comark/plugins/toc"
+import summary from "comark/plugins/summary"
+import math from "comark/plugins/math"
+import footnotes from "comark/plugins/footnotes"
+import highlight from "comark/plugins/highlight"
+import security from "comark/plugins/security"
+import mermaid from "comark/plugins/mermaid"
+import githubLight from "@shikijs/themes/github-light"
+import githubDark from "@shikijs/themes/github-dark"
+import python from "shiki/dist/langs/python.mjs"
 
 /* ------------------------------------------------------------------ */
 /*  Table-of-contents nav items                                       */
@@ -18,8 +33,21 @@ const TOC = [
   { id: "named-slots", label: "Named Slots", icon: Layers },
   { id: "nested-components", label: "Nested Components", icon: Layers },
   { id: "attributes", label: "Element Attributes", icon: Hash },
+  { id: "plugins-intro", label: "Plugins", icon: Puzzle },
+  { id: "plugin-alert", label: "Alerts (built-in)", icon: ShieldCheck },
+  { id: "plugin-emoji", label: "Emoji Plugin", icon: Smile },
+  { id: "plugin-task-list", label: "Task List Plugin", icon: ListChecks },
+  { id: "plugin-footnotes", label: "Footnotes Plugin", icon: Footprints },
+  { id: "plugin-math", label: "Math Plugin", icon: Sigma },
+  { id: "plugin-highlight", label: "Highlight Plugin", icon: Palette },
+  { id: "plugin-mermaid", label: "Mermaid Plugin", icon: GitBranch },
+  { id: "plugin-json-render", label: "JSON Render Plugin", icon: Braces },
+  { id: "plugin-security", label: "Security Plugin", icon: Lock },
+  { id: "plugin-toc", label: "TOC Plugin", icon: Heading },
+  { id: "plugin-excerpt", label: "Excerpt Plugin", icon: Scissors },
   { id: "streaming", label: "Streaming", icon: Zap },
   { id: "playground", label: "Playground", icon: BookOpen },
+  { id: "llm-prompt", label: "LLM Prompt", icon: Code2 },
 ]
 
 /* ------------------------------------------------------------------ */
@@ -146,6 +174,235 @@ Span syntax wraps inline text: [highlighted text]{.bg-accent/20 .px-1 .rounded} 
 `
 
 /* ------------------------------------------------------------------ */
+/*  Plugin demo source strings                                        */
+/* ------------------------------------------------------------------ */
+
+const PLUGIN_EMOJI = `Emoji shortcodes are converted to real emoji characters:
+
+I :heart: Comark! It's :rocket: fast and :sparkles: beautiful.
+
+:wave: Hello! How are you :smile: today?
+
+Combine with markdown: **:fire: Hot take** — Comark is _:100: percent_ awesome :tada:
+
+Some more: :thumbsup: :thumbsdown: :eyes: :warning: :bulb: :memo:
+`
+
+const PLUGIN_ALERT = `GitHub-style alerts are **built-in** — no plugin import needed:
+
+> [!NOTE]
+> Useful information that users should know, even when skimming content.
+
+> [!TIP]
+> Helpful advice for doing things better or more easily.
+
+> [!IMPORTANT]
+> Key information users need to know to achieve their goal.
+
+> [!WARNING]
+> Urgent info that needs immediate user attention to avoid problems.
+
+> [!CAUTION]
+> Advises about risks or negative outcomes of certain actions.
+`
+
+const PLUGIN_TASK_LIST = `Interactive task lists from standard markdown syntax:
+
+- [x] Install Comark
+- [x] Add the task-list plugin
+- [ ] Build something awesome
+- [ ] Ship to production
+
+Nested task lists also work:
+
+- [x] Phase 1
+  - [x] Research
+  - [x] Prototype
+- [ ] Phase 2
+  - [ ] Implementation
+  - [ ] Testing
+`
+
+const PLUGIN_TOC = `The TOC plugin extracts a table of contents from headings:
+
+# Introduction
+
+Welcome to the docs.
+
+## Getting Started
+
+Install the package.
+
+### Prerequisites
+
+Make sure you have Node.js installed.
+
+## API Reference
+
+Full API documentation.
+
+### Core Functions
+
+The main parsing functions.
+
+### Plugins
+
+Extend with plugins.
+`
+
+const PLUGIN_MATH = `Inline math uses single dollar signs: $E = mc^2$ is Einstein's famous equation.
+
+The quadratic formula is $x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$.
+
+Display math uses double dollar signs for block equations:
+
+$$
+\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}
+$$
+
+$$
+\\sum_{n=1}^{\\infty} \\frac{1}{n^2} = \\frac{\\pi^2}{6}
+$$
+
+Mix with markdown: the **Pythagorean theorem** states that $a^2 + b^2 = c^2$.
+`
+
+const PLUGIN_FOOTNOTES = `Comark supports footnotes[^1] with automatic back-references[^2].
+
+References are rendered as superscript links, and definitions are collected
+into a numbered list at the end of the output.
+
+The standard model[^sm] describes three of the four fundamental forces.
+Gravity is described by general relativity[^gr].
+
+[^1]: Footnotes are rendered as a list at the end of the document.
+[^2]: Each footnote includes a back-reference link to return to the text.
+[^sm]: The Standard Model of particle physics classifies all known elementary particles.
+[^gr]: Einstein's general theory of relativity, published in 1915.
+`
+
+const PLUGIN_HIGHLIGHT = `Syntax highlighting uses Shiki under the hood:
+
+\`\`\`typescript
+interface User {
+  id: string
+  name: string
+  email: string
+}
+
+function greet(user: User): string {
+  return \\\`Hello, \\\${user.name}!\\\`
+}
+\`\`\`
+
+\`\`\`python
+def fibonacci(n: int) -> list[int]:
+    """Generate a Fibonacci sequence."""
+    a, b = 0, 1
+    result = []
+    for _ in range(n):
+        result.append(a)
+        a, b = b, a + b
+    return result
+\`\`\`
+`
+
+const PLUGIN_MERMAID = `Mermaid diagrams render from \\\`\\\`\\\`mermaid code blocks:
+
+\`\`\`mermaid
+graph TD
+    A[Parse MDC] --> B{Has components?}
+    B -->|Yes| C[Resolve components]
+    B -->|No| D[Render markdown]
+    C --> D
+    D --> E[React output]
+\`\`\`
+`
+
+const PLUGIN_SECURITY = `The security plugin sanitizes the AST to prevent XSS:
+
+**Before** (dangerous input):
+- \`<script>alert('XSS')</script>\` is stripped
+- \`<a href="javascript:alert('XSS')">Click</a>\` has href removed
+- \`<img onerror="alert('XSS')" src="x">\` has event handler stripped
+- \`<iframe src="evil.com"></iframe>\` is removed (with blockedTags)
+
+**After** (safe output):
+The text remains but dangerous elements are neutralized.
+
+Configure with options:
+
+\`\`\`typescript
+security({
+  blockedTags: ['script', 'iframe', 'object', 'embed'],
+  allowedProtocols: ['https', 'mailto'],
+  allowDataImages: false,
+})
+\`\`\`
+`
+
+const PLUGIN_JSON_RENDER = `The JSON Render plugin converts \\\`\\\`\\\`json-render code blocks into live UI. Element \`type\` values map to registered Comark components:
+
+\`\`\`json-render
+{
+  "root": "wrapper",
+  "elements": {
+    "wrapper": {
+      "type": "steps",
+      "children": ["s1", "s2", "s3"]
+    },
+    "s1": {
+      "type": "step",
+      "props": { "title": "Write a JSON spec" },
+      "children": ["s1-text"]
+    },
+    "s1-text": {
+      "type": "Text",
+      "props": { "content": "Define your UI tree as JSON with type, props, and children." }
+    },
+    "s2": {
+      "type": "step",
+      "props": { "title": "Register components" },
+      "children": ["s2-text"]
+    },
+    "s2-text": {
+      "type": "Text",
+      "props": { "content": "Components referenced by type must be in the components map." }
+    },
+    "s3": {
+      "type": "step",
+      "props": { "title": "Render" },
+      "children": ["s3-text"]
+    },
+    "s3-text": {
+      "type": "Text",
+      "props": { "content": "The plugin converts the spec into Comark AST nodes at parse time." }
+    }
+  }
+}
+\`\`\`
+
+Single-element shorthand also works (YAML variant):
+
+\`\`\`yaml-render
+type: callout
+props:
+  emoji: "\u{1F4CB}"
+children:
+  - This callout was generated entirely from a YAML spec!
+\`\`\`
+`
+
+const PLUGIN_EXCERPT = `This is the excerpt content that appears before the delimiter. It's typically used for blog post previews, summaries, or meta descriptions.
+
+<!--more-->
+
+This is the rest of the content that comes after the excerpt delimiter. In a blog, this would only be visible on the full post page, not in the listing.
+
+The \`summary\` plugin splits content at the \`<!--more-->\` delimiter and exposes the excerpt via the parsed tree's data.
+`
+
+/* ------------------------------------------------------------------ */
 /*  Main component                                                    */
 /* ------------------------------------------------------------------ */
 
@@ -155,33 +412,66 @@ export default function KitchenSink() {
       {/* Header */}
       <header className="border-b-2 border-border bg-card">
         <div className="mx-auto max-w-6xl px-6 py-10">
-          <div className="flex items-start gap-4">
-            <div className="flex size-12 items-center justify-center rounded-xl border-2 border-primary bg-primary/10">
-              <BookOpen className="size-6 text-primary" />
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <div className="flex size-12 items-center justify-center rounded-xl border-2 border-primary bg-primary/10">
+                <BookOpen className="size-6 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl text-balance">
+                  Comark Kitchen Sink
+                </h1>
+                <p className="mt-2 max-w-2xl text-lg text-muted-foreground text-pretty">
+                  A comprehensive demo of every Comark feature: components in
+                  Markdown for React. Each section shows the MDC source alongside
+                  its rendered output.
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl text-balance">
-                Comark Kitchen Sink
-              </h1>
-              <p className="mt-2 max-w-2xl text-lg text-muted-foreground text-pretty">
-                A comprehensive demo of every Comark feature: components in
-                Markdown for React. Each section shows the MDC source alongside
-                its rendered output.
-              </p>
-            </div>
+            <ThemeToggle />
           </div>
         </div>
       </header>
+
+      {/* Mobile jump-to nav -- visible below lg breakpoint */}
+      <div className="sticky top-0 z-30 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 lg:hidden">
+        <div className="mx-auto max-w-6xl px-6 py-3">
+          <div className="relative">
+            <select
+              aria-label="Jump to section"
+              className="w-full appearance-none rounded-lg border-2 border-border bg-background px-4 py-2.5 pr-10 text-sm font-medium text-foreground focus:border-primary focus:outline-none"
+              defaultValue=""
+              onChange={(e) => {
+                const el = document.getElementById(e.target.value)
+                if (el) {
+                  el.scrollIntoView({ behavior: "smooth" })
+                  e.target.value = ""
+                }
+              }}
+            >
+              <option value="" disabled>
+                Jump to section...
+              </option>
+              {TOC.map(({ id, label }) => (
+                <option key={id} value={id}>
+                  {label}
+                </option>
+              ))}
+            </select>
+            <ChevronsUpDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          </div>
+        </div>
+      </div>
 
       <div className="mx-auto max-w-6xl px-6 py-8">
         <div className="flex flex-col gap-8 lg:flex-row">
           {/* Sticky sidebar TOC */}
           <nav className="hidden lg:block lg:w-56 shrink-0">
-            <div className="sticky top-8">
-              <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <div className="sticky top-8 max-h-[calc(100vh-4rem)] flex flex-col">
+              <h3 className="mb-3 shrink-0 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 On this page
               </h3>
-              <ul className="flex flex-col gap-1">
+              <ul className="flex flex-col gap-1 overflow-y-auto overscroll-contain pr-2">
                 {TOC.map(({ id, label, icon: Icon }) => (
                   <li key={id}>
                     <a
@@ -257,9 +547,132 @@ export default function KitchenSink() {
               source={ATTRIBUTES}
             />
 
+            {/* ---- Plugins section divider ---- */}
+            <section id="plugins-intro" className="scroll-mt-24">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="flex size-10 items-center justify-center rounded-lg border-2 border-primary bg-primary/10">
+                  <Puzzle className="size-5 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-foreground text-balance">
+                    Plugins
+                  </h2>
+                  <p className="text-muted-foreground text-pretty">
+                    Comark ships with built-in plugins that extend markdown with
+                    emoji, syntax highlighting, math, alerts, task lists, and
+                    more. Pass them via the <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm">plugins</code> prop.
+                  </p>
+                </div>
+              </div>
+              <pre className="overflow-x-auto rounded-xl border-2 border-border bg-muted/20 p-5 font-mono text-sm leading-relaxed text-foreground">
+{`import emoji      from "comark/plugins/emoji"
+import footnotes  from "comark/plugins/footnotes"
+import math       from "comark/plugins/math"
+import highlight  from "comark/plugins/highlight"
+import mermaid    from "comark/plugins/mermaid"
+import jsonRender from "comark/plugins/json-render"
+import security   from "comark/plugins/security"
+
+// Alerts (> [!NOTE]) are built-in — no import needed!
+
+<ComarkClient plugins={[emoji(), math(), footnotes(), highlight(), mermaid(), jsonRender()]}>
+  {content}
+</ComarkClient>`}
+              </pre>
+            </section>
+
+            <DemoSection
+              id="plugin-alert"
+              title="Alerts (built-in)"
+              description="GitHub-style alert blockquotes are built into Comark -- no plugin import needed. Uses > [!TYPE] syntax for NOTE, TIP, IMPORTANT, WARNING, and CAUTION. Register a custom blockquote component to add icons and colors."
+              source={PLUGIN_ALERT}
+            />
+
+            <DemoSection
+              id="plugin-emoji"
+              title="Emoji Plugin"
+              description="Converts emoji shortcodes like :smile: and :rocket: into real Unicode emoji characters. Import from comark/plugins/emoji. No configuration needed."
+              source={PLUGIN_EMOJI}
+              plugins={[emoji()]}
+            />
+
+            <DemoSection
+              id="plugin-task-list"
+              title="Task List Plugin"
+              description="Renders interactive checkboxes from standard [ ] and [x] list syntax. Supports nesting. Import from comark/plugins/task-list."
+              source={PLUGIN_TASK_LIST}
+              plugins={[taskList()]}
+            />
+
+            <DemoSection
+              id="plugin-footnotes"
+              title="Footnotes Plugin"
+              description="Adds footnote references [^label] and definitions [^label]: content. References become superscript links; definitions collect into a numbered list at the end. Import from comark/plugins/footnotes."
+              source={PLUGIN_FOOTNOTES}
+              plugins={[footnotes()]}
+            />
+
+            <DemoSection
+              id="plugin-math"
+              title="Math Plugin (KaTeX)"
+              description="Renders LaTeX math with KaTeX. Inline: $E = mc^2$. Display: $$...$$. Requires katex peer dep. Register the Math component for rendering. Import from comark/plugins/math."
+              source={PLUGIN_MATH}
+              plugins={[math()]}
+            />
+
+            <DemoSection
+              id="plugin-highlight"
+              title="Syntax Highlighting (Shiki)"
+              description="Shiki-powered syntax highlighting with dual-theme support. Languages are loaded on demand. Requires shiki peer dep. Import from comark/plugins/highlight."
+              source={PLUGIN_HIGHLIGHT}
+              plugins={[highlight({ themes: { light: githubLight, dark: githubDark }, languages: [python] })]}
+            />
+
+            <DemoSection
+              id="plugin-mermaid"
+              title="Mermaid Diagrams"
+              description="Renders Mermaid diagrams from ```mermaid code blocks. Requires beautiful-mermaid peer dep. Register the Mermaid component for rendering. Import from comark/plugins/mermaid."
+              source={PLUGIN_MERMAID}
+              plugins={[mermaid()]}
+            />
+
+            <DemoSection
+              id="plugin-json-render"
+              title="JSON Render Plugin"
+              description="Transforms ```json-render and ```yaml-render code blocks into live UI. The type field in the spec maps to registered component names. Supports both full specs (root + elements tree) and single-element shorthand. Import from comark/plugins/json-render."
+              source={PLUGIN_JSON_RENDER}
+              plugins={[jsonRender()]}
+            />
+
+            <DemoSection
+              id="plugin-security"
+              title="Security Sanitization"
+              description="Sanitizes the parsed AST by removing dangerous elements (script, iframe), blocking malicious protocols (javascript:, vbscript:), and stripping event handlers (onclick, onerror). Import from comark/plugins/security."
+              source={PLUGIN_SECURITY}
+              plugins={[security({ blockedTags: ["script", "iframe", "object", "embed"] })]}
+            />
+
+            <DemoSection
+              id="plugin-toc"
+              title="TOC Plugin"
+              description="Generates a hierarchical table of contents from headings and stores it in tree.meta.toc. Heading IDs are auto-generated for anchor linking. Import from comark/plugins/toc."
+              source={PLUGIN_TOC}
+              plugins={[toc({ depth: 3 })]}
+            />
+
+            <DemoSection
+              id="plugin-excerpt"
+              title="Excerpt / Summary Plugin"
+              description="Splits content at the <!--more--> delimiter to extract excerpts for blog post previews or meta descriptions. The excerpt is exposed via tree.meta.summary. Import from comark/plugins/summary."
+              source={PLUGIN_EXCERPT}
+              plugins={[summary()]}
+            />
+
             <StreamingDemo />
 
             <Playground />
+
+            <LLMPromptBlock />
           </main>
         </div>
       </div>
