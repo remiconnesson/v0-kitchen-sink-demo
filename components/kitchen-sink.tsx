@@ -3,9 +3,10 @@
 import DemoSection from "@/components/demo-section"
 import StreamingDemo from "@/components/streaming-demo"
 import Playground from "@/components/playground"
-import { BookOpen, Layers, Zap, Code2, Hash, Type, Box, ArrowRight, Puzzle, Smile, ListChecks, Heading, ShieldCheck, Scissors, Sigma, Footprints, Palette, Lock, GitBranch } from "lucide-react"
+import { BookOpen, Layers, Zap, Code2, Hash, Type, Box, ArrowRight, Puzzle, Smile, ListChecks, Heading, ShieldCheck, Scissors, Sigma, Footprints, Palette, Lock, GitBranch, Braces } from "lucide-react"
 import { cn } from "@/lib/utils"
 import emoji from "comark/plugins/emoji"
+import jsonRender from "comark/plugins/json-render"
 import taskList from "comark/plugins/task-list"
 import toc from "comark/plugins/toc"
 import summary from "comark/plugins/summary"
@@ -37,6 +38,7 @@ const TOC = [
   { id: "plugin-math", label: "Math Plugin", icon: Sigma },
   { id: "plugin-highlight", label: "Highlight Plugin", icon: Palette },
   { id: "plugin-mermaid", label: "Mermaid Plugin", icon: GitBranch },
+  { id: "plugin-json-render", label: "JSON Render Plugin", icon: Braces },
   { id: "plugin-security", label: "Security Plugin", icon: Lock },
   { id: "plugin-toc", label: "TOC Plugin", icon: Heading },
   { id: "plugin-excerpt", label: "Excerpt Plugin", icon: Scissors },
@@ -335,6 +337,64 @@ security({
 \`\`\`
 `
 
+const PLUGIN_JSON_RENDER = `The JSON Render plugin converts \\\`\\\`\\\`json-render code blocks into live UI. Element \`type\` values map to registered Comark components:
+
+\`\`\`json-render
+{
+  "root": "wrapper",
+  "elements": {
+    "wrapper": {
+      "type": "steps",
+      "children": ["s1", "s2", "s3"]
+    },
+    "s1": {
+      "type": "step",
+      "props": { "title": "Write a JSON spec" },
+      "children": ["s1-text"]
+    },
+    "s1-text": {
+      "type": "Text",
+      "props": { "content": "Define your UI tree as JSON with type, props, and children." }
+    },
+    "s2": {
+      "type": "step",
+      "props": { "title": "Register components" },
+      "children": ["s2-text"]
+    },
+    "s2-text": {
+      "type": "Text",
+      "props": { "content": "Components referenced by type must be in the components map." }
+    },
+    "s3": {
+      "type": "step",
+      "props": { "title": "Render" },
+      "children": ["s3-text"]
+    },
+    "s3-text": {
+      "type": "Text",
+      "props": { "content": "The plugin converts the spec into Comark AST nodes at parse time." }
+    }
+  }
+}
+\`\`\`
+
+Single-element shorthand also works (YAML variant):
+
+\`\`\`yaml-render
+type: alert
+props:
+  type: info
+children:
+  - text-1
+\`\`\`
+
+\`\`\`yaml-render
+type: Text
+props:
+  content: This alert was generated from a YAML spec!
+\`\`\`
+`
+
 const PLUGIN_EXCERPT = `This is the excerpt content that appears before the delimiter. It's typically used for blog post previews, summaries, or meta descriptions.
 
 <!--more-->
@@ -474,16 +534,17 @@ export default function KitchenSink() {
                 </div>
               </div>
               <pre className="overflow-x-auto rounded-xl border-2 border-border bg-muted/20 p-5 font-mono text-sm leading-relaxed text-foreground">
-{`import emoji     from "comark/plugins/emoji"
-import footnotes from "comark/plugins/footnotes"
-import math      from "comark/plugins/math"
-import highlight from "comark/plugins/highlight"
-import mermaid   from "comark/plugins/mermaid"
-import security  from "comark/plugins/security"
+{`import emoji      from "comark/plugins/emoji"
+import footnotes  from "comark/plugins/footnotes"
+import math       from "comark/plugins/math"
+import highlight  from "comark/plugins/highlight"
+import mermaid    from "comark/plugins/mermaid"
+import jsonRender from "comark/plugins/json-render"
+import security   from "comark/plugins/security"
 
 // Alerts (> [!NOTE]) are built-in — no import needed!
 
-<ComarkClient plugins={[emoji(), math(), footnotes(), highlight(), mermaid()]}>
+<ComarkClient plugins={[emoji(), math(), footnotes(), highlight(), mermaid(), jsonRender()]}>
   {content}
 </ComarkClient>`}
               </pre>
@@ -542,6 +603,14 @@ import security  from "comark/plugins/security"
               description="Renders Mermaid diagrams from ```mermaid code blocks. Requires beautiful-mermaid peer dep. Register the Mermaid component for rendering. Import from comark/plugins/mermaid."
               source={PLUGIN_MERMAID}
               plugins={[mermaid()]}
+            />
+
+            <DemoSection
+              id="plugin-json-render"
+              title="JSON Render Plugin"
+              description="Transforms ```json-render and ```yaml-render code blocks into live UI. The type field in the spec maps to registered component names. Supports both full specs (root + elements tree) and single-element shorthand. Import from comark/plugins/json-render."
+              source={PLUGIN_JSON_RENDER}
+              plugins={[jsonRender()]}
             />
 
             <DemoSection
