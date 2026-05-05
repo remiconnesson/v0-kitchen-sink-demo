@@ -3,6 +3,7 @@
 import DemoSection from "@/components/demo-section"
 import StreamingDemo from "@/components/streaming-demo"
 import Playground from "@/components/playground"
+import LLMPromptBlock from "@/components/llm-prompt-block"
 import { BookOpen, Layers, Zap, Code2, Hash, Type, Box, ArrowRight, Puzzle, Smile, ListChecks, Heading, ShieldCheck, Scissors, Sigma, Footprints, Palette, Lock, GitBranch, Braces } from "lucide-react"
 import ThemeToggle from "@/components/theme-toggle"
 import { cn } from "@/lib/utils"
@@ -46,6 +47,7 @@ const TOC = [
   { id: "plugin-excerpt", label: "Excerpt Plugin", icon: Scissors },
   { id: "streaming", label: "Streaming", icon: Zap },
   { id: "playground", label: "Playground", icon: BookOpen },
+  { id: "llm-prompt", label: "LLM Prompt", icon: Code2 },
 ]
 
 /* ------------------------------------------------------------------ */
@@ -639,6 +641,8 @@ import security   from "comark/plugins/security"
             <StreamingDemo />
 
             <Playground />
+
+            <LLMPromptBlock />
           </main>
         </div>
       </div>
