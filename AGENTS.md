@@ -164,6 +164,136 @@ from `@comark/react`, so client components can safely import it without pulling 
 
 ---
 
+## Directory Structure (continued)
+
+```
+components/
+  comark/
+    math-renderer.tsx        # Custom Math component (fixes className vs class issue)
+    github-alert-blockquote.tsx  # Custom blockquote override for GitHub-style alerts
+  theme-toggle.tsx           # Dark/light mode toggle (next-themes)
+  theme-provider.tsx         # next-themes ThemeProvider wrapper
+  llm-prompt-block.tsx       # Copyable LLM system prompt for writing MDC
+```
+
+---
+
+## Plugins Reference
+
+### Built-in (no import needed)
+
+| Feature            | Syntax                    | Notes                                                |
+| ------------------ | ------------------------- | ---------------------------------------------------- |
+| GitHub-style Alerts | `> [!NOTE]`, `> [!TIP]`  | Sets `as` prop on `blockquote`. Needs blockquote override component. |
+
+### Opt-in Plugins
+
+| Plugin       | Import                         | Peer Deps            | React Component Needed?                    |
+| ------------ | ------------------------------ | -------------------- | ------------------------------------------ |
+| emoji        | `comark/plugins/emoji`         | none                 | No                                         |
+| task-list    | `comark/plugins/task-list`     | none                 | No                                         |
+| footnotes    | `comark/plugins/footnotes`     | none                 | No                                         |
+| toc          | `comark/plugins/toc`           | none                 | No (data in `tree.meta.toc`)               |
+| summary      | `comark/plugins/summary`       | none                 | No (data in `tree.meta.summary`)           |
+| security     | `comark/plugins/security`      | none                 | No                                         |
+| math         | `comark/plugins/math`          | `katex`              | Yes: register `math` in components map     |
+| highlight    | `comark/plugins/highlight`     | `shiki`              | No (produces inline styles)                |
+| mermaid      | `comark/plugins/mermaid`       | `beautiful-mermaid`  | Yes: register `mermaid` in components map  |
+| json-render  | `comark/plugins/json-render`   | none                 | No (maps `type` to existing components)    |
+
+### Passing plugins
+
+```tsx
+<ComarkClient plugins={[emoji(), math(), highlight({ ... })]} components={comarkComponents}>
+  {content}
+</ComarkClient>
+```
+
+**Important:** `ComarkClient` caches the parse in `useMemo([content])`. Plugins and options
+are only read on the first parse for a given content string. Always define plugin arrays
+outside the component or wrap in `useMemo` so they are stable references.
+
+---
+
+## Gotchas & Hard-Won Lessons
+
+### 1. `class` vs `className` in element override components
+
+The Comark renderer converts `class` attributes to `className` before passing to React
+components. However, the **built-in** `Math` component from `@comark/react/plugins/math`
+destructures `{ class: className }` — which doesn't match the `className` prop the renderer
+actually passes. This causes inline math to always render as `<div>` (block) instead of
+`<span>` (inline), breaking `<p>` nesting and triggering hydration errors.
+
+**Fix:** Use the custom `components/comark/math-renderer.tsx` which reads `className` correctly.
+
+### 2. GitHub alerts are built-in — don't import the plugin
+
+The `> [!NOTE]` / `> [!TIP]` syntax is processed by comark's core parser, not a plugin.
+Do NOT `import alert from "comark/plugins/alert"`. The parser sets `as="note"` etc. on
+`<blockquote>` elements. Register a custom `blockquote` component override
+(`github-alert-blockquote.tsx`) to render them with icons and colors.
+
+### 3. Highlight plugin default languages
+
+Shiki's default bundle in the highlight plugin only includes:
+`vue, tsx, svelte, typescript, javascript, bash, json, yaml, astro`.
+
+For **any other language** (Python, Rust, Go, etc.), you must import and pass it explicitly:
+
+```tsx
+import python from "shiki/dist/langs/python.mjs"
+highlight({ themes: { light: githubLight, dark: githubDark }, languages: [python] })
+```
+
+### 4. Shiki dark mode requires CSS variable swapping
+
+Shiki dual-theme generates inline `style` attributes for the light theme and `--shiki-dark-*`
+CSS variables for the dark theme. You MUST add this CSS rule for dark mode to work:
+
+```css
+.dark .shiki,
+.dark .shiki span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+  font-weight: var(--shiki-dark-font-weight) !important;
+  text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+```
+
+### 5. json-render blocks are independent
+
+Each ` ```json-render ` or ` ```yaml-render ` code block is processed independently.
+Element IDs in `children` arrays cannot reference elements defined in a different code block.
+Use a single block with `root` + `elements` for multi-element specs, or inline text as children.
+
+### 6. Element overrides share the `components` prop
+
+Custom MDC components (like `alert`, `card`) and HTML element overrides (like `math`,
+`blockquote`, `mermaid`) all go in the same `components` map. There is no separate
+`elements` prop. The renderer matches the tag name from the parsed tree against the
+`components` keys.
+
+### 7. `.comark-output` CSS class is required for prose styles
+
+The global CSS styles for headings, lists, tables, blockquotes, code blocks, etc. are scoped
+under `.comark-output`. Any container rendering Comark output MUST include this class,
+otherwise markdown elements render unstyled.
+
+### 8. Dark mode: avoid hardcoded light-only Tailwind colors
+
+Never use `bg-blue-50 text-blue-900` without a corresponding `dark:bg-blue-950 dark:text-blue-200`.
+Prefer semantic tokens (`bg-card`, `text-foreground`, `bg-muted`) which auto-adapt.
+When explicit colors are needed (alert variants), always pair light and dark variants.
+
+### 9. KaTeX CSS must be imported globally
+
+The math plugin requires `import 'katex/dist/katex.min.css'` in `layout.tsx` (or equivalent).
+Without it, math renders as unstyled HTML with broken layout.
+
+---
+
 ## Playbooks
 
 ### Playbook 1: Add a New Custom Component
@@ -393,9 +523,57 @@ export const DocsComark = defineComarkComponent({
 })
 ```
 
+### Playbook 8: Add a Plugin to a Comark Instance
+
+1. Install peer deps if needed: `pnpm add katex` (math), `pnpm add shiki` (highlight),
+   `pnpm add beautiful-mermaid` (mermaid).
+
+2. Import the plugin in your component:
+
+```tsx
+import math from "comark/plugins/math"
+import highlight from "comark/plugins/highlight"
+import python from "shiki/dist/langs/python.mjs" // extra languages
+```
+
+3. Pass plugins via the `plugins` prop:
+
+```tsx
+<AppComarkClient plugins={[math(), highlight({ themes: { light, dark }, languages: [python] })]}>
+  {content}
+</AppComarkClient>
+```
+
+4. If the plugin produces custom elements (math, mermaid), register the component in
+   `components-map.ts`:
+
+```tsx
+import MathRenderer from "./math-renderer"
+// Add to comarkComponents:
+math: MathRenderer,
+```
+
+5. If the plugin needs global CSS (KaTeX), add the import to `layout.tsx`:
+
+```tsx
+import 'katex/dist/katex.min.css'
+```
+
+### Playbook 9: Dark Mode Setup
+
+1. Wrap `<body>` children in `<ThemeProvider attribute="class" defaultTheme="system" enableSystem>` in `layout.tsx`.
+2. Add `suppressHydrationWarning` to `<html>`.
+3. Use `ThemeToggle` component from `components/theme-toggle.tsx` for the toggle UI.
+4. **Color rules:**
+   - Prefer semantic tokens: `bg-card`, `text-foreground`, `bg-muted`, `border-border`.
+   - When explicit colors are needed, always pair: `bg-blue-50 dark:bg-blue-950`.
+   - For Shiki highlighting, the CSS variable swap rule in `globals.css` handles it automatically.
+
 ---
 
 ## Comark Component API Cheatsheet
+
+### Custom MDC Components
 
 | Component         | MDC Syntax                                      | React Props                                   |
 | ----------------- | ----------------------------------------------- | --------------------------------------------- |
@@ -407,6 +585,14 @@ export const DocsComark = defineComarkComponent({
 | Step              | `::step{title="..."}`                           | `title`, `children`                           |
 | Tabs              | `::tabs{tabs="A,B"}` + default/`#tab1`/`#tab2`  | `tabs`, `children`, `slotTab1`, `slotTab2`    |
 | Divider           | `::divider{label="..."}` or `::divider::`       | `label`                                       |
+
+### Element Overrides (registered in same `components` map)
+
+| Key               | Source                          | Purpose                                       |
+| ----------------- | ------------------------------- | --------------------------------------------- |
+| `math`            | `math-renderer.tsx`             | Renders KaTeX from `content` prop             |
+| `blockquote`      | `github-alert-blockquote.tsx`   | Styled GitHub alerts when `as` prop is set    |
+| `mermaid`         | `@comark/react/plugins/mermaid` | Renders Mermaid diagrams from `content` prop  |
 
 ---
 
