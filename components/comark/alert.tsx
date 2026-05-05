@@ -10,10 +10,10 @@ const icons = {
 } as const
 
 const styles = {
-  info: "border-primary/30 bg-primary/5 text-primary",
-  warning: "border-accent/30 bg-accent/5 text-accent-foreground",
-  error: "border-destructive/30 bg-destructive/5 text-destructive",
-  success: "border-secondary/30 bg-secondary/5 text-secondary-foreground",
+  info: "border-blue-300 bg-blue-50 text-blue-900",
+  warning: "border-amber-300 bg-amber-50 text-amber-900",
+  error: "border-red-300 bg-red-50 text-red-900",
+  success: "border-emerald-300 bg-emerald-50 text-emerald-900",
 } as const
 
 type AlertType = keyof typeof styles
