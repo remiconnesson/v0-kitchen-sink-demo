@@ -437,11 +437,11 @@ export default function KitchenSink() {
         <div className="flex flex-col gap-8 lg:flex-row">
           {/* Sticky sidebar TOC */}
           <nav className="hidden lg:block lg:w-56 shrink-0">
-            <div className="sticky top-8">
-              <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <div className="sticky top-8 max-h-[calc(100vh-4rem)] flex flex-col">
+              <h3 className="mb-3 shrink-0 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 On this page
               </h3>
-              <ul className="flex flex-col gap-1">
+              <ul className="flex flex-col gap-1 overflow-y-auto overscroll-contain pr-2">
                 {TOC.map(({ id, label, icon: Icon }) => (
                   <li key={id}>
                     <a
