@@ -1,37 +1,20 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 
 import { Analytics } from '@vercel/analytics/next'
-import { ThemeProvider } from '@/components/theme-provider'
+import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
-import 'katex/dist/katex.min.css'
-import { Geist, Geist_Mono, Geist as V0_Font_Geist, Geist_Mono as V0_Font_Geist_Mono, Source_Serif_4 as V0_Font_Source_Serif_4 } from 'next/font/google'
 
-// Initialize fonts
-const _geist = V0_Font_Geist({ subsets: ['latin'], weight: ["100","200","300","400","500","600","700","800","900"] })
-const _geistMono = V0_Font_Geist_Mono({ subsets: ['latin'], weight: ["100","200","300","400","500","600","700","800","900"] })
-const _sourceSerif_4 = V0_Font_Source_Serif_4({ subsets: ['latin'], weight: ["200","300","400","500","600","700","800","900"] })
+const _geistSans = Geist({ subsets: ['latin'] })
+const _geistMono = Geist_Mono({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Comark Kitchen Sink — Components in Markdown for React',
-  description: 'A comprehensive demo of every Comark feature: block components, inline components, props, slots, nesting, attributes, streaming, and a live playground.',
-  generator: 'v0.app',
-  icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
-  },
+  title: 'Braintrust + Vercel — Evaluate and Trace AI SDK Apps',
+  description:
+    'Braintrust is the AI quality, tracing, and evaluation layer for apps built with the Vercel AI SDK. Evaluate, trace, compare, score, and improve AI behavior.',
+}
+
+export const viewport: Viewport = {
+  themeColor: '#1a1a2e',
 }
 
 export default function RootLayout({
@@ -40,11 +23,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="bg-background" suppressHydrationWarning>
-      <body className="font-sans antialiased">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          {children}
-        </ThemeProvider>
+    <html lang="en" className="bg-background">
+      <body className="font-sans antialiased">{children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
